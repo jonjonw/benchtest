@@ -1,0 +1,8 @@
+{
+  "name": "benchrest",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "^4.13.3",
+    "restling": "^0.9.1"
+  }
+}
