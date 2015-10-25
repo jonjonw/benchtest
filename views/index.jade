@@ -21,6 +21,31 @@ block content
             td= transaction.Amount
             td= transaction.Company
 
+    .panel.category-detail
+      .panel-heading
+        h3 Category Breakdowns
+      .panel-body
+        ul.nav.nav-tabs(role='tablist')
+          each transactions, index in transactions_by_category
+            li(role='tab')
+              a(href="#cateogry-#{index}", aria-controls="#cateogry-#{index}", role="tab", data-toggle="tab")= transactions[0].Ledger
+
+        .tab-content
+          each transactions, index in transactions_by_category
+            .tab-pane(id="cateogry-#{index}",role="tabpanel")
+              table.table.table-striped.table-bordered.table-hover
+                thead
+                  tr
+                    th Date
+                    th Amount
+                    th Company
+                tbody
+                  each transaction in transactions
+                    tr
+                      td= transaction.Date
+                      td= transaction.Amount
+                      td= transaction.Company
+
 block bodyjs
   script(src="//code.jquery.com/jquery-2.1.4.min.js")
   script(src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js")

@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var express = require('express');
 var restling = require('restling');
 var app = express();
@@ -11,6 +12,7 @@ app.get('/', function (req, res, next) {
 
   var pages = [];
   var transactions = [];
+  var transactions_by_category;
   var page_count;
   var page_size;
   var total_balance;
@@ -32,6 +34,7 @@ app.get('/', function (req, res, next) {
   .then(function(responses) {
     pages = pages.concat(responses.map(function(response) { return response.data; }))
     transactions = [].concat.apply([], pages.map(function(page) { return page.transactions }));
+    transactions_by_category = _.groupBy(transactions, function(transaction) { return transaction.Ledger });
     total_balance = transactions.reduce(function(pv, transaction) { return pv + Number(transaction.Amount) }, 0);
   })
   .then(function(result) {
@@ -40,6 +43,7 @@ app.get('/', function (req, res, next) {
       'title': 'Transactions',
       'total_balance': total_balance,
       'transactions': transactions,
+      'transactions_by_category': _.values(transactions_by_category),
       'page_size': page_size
     });
   })
