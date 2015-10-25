@@ -17,7 +17,7 @@ app.get('/', function (req, res, next) {
   var page_size;
   var total_balance;
 
-  var sumTranaction = function(pv, transaction) { return pv + Number(transaction.Amount) }
+  var sumTransaction = function(pv, transaction) { return pv + Number(transaction.Amount) }
   var markDuplicates = function(transactions) {
     var hash = _.groupBy(transactions, function(transaction) {
       return _.values(transaction).join('|'); // key for uniqueness
@@ -37,13 +37,14 @@ app.get('/', function (req, res, next) {
     }).map(function(transactions, category) {
       return {
         'category': category == "" ? "None" : category,
-        'total_balance': transactions.reduce(sumTranaction, 0),
+        'total_balance': transactions.reduce(sumTransaction, 0),
         'transactions': transactions
       };
     }).values().sortBy('category').value();
     return grouped;
   }
   var addRunningDailyTotals = function(transactions) {
+    // Note: Was told that the data from the API will always be sorted by date
     var date, dailyTotal = 0;
     _.each(transactions, function(transaction) {
       if (!date) date = transaction.Date;
@@ -56,6 +57,7 @@ app.get('/', function (req, res, next) {
     });
   }
   var cleanCompanyNames = function(transactions) {
+
     _.each(transactions, function(transaction) {
       transaction.Company = transaction.Company
         .replace(/ [a-zA-Z]+ [A-Z]{2}$/,'') // city provence
@@ -69,13 +71,12 @@ app.get('/', function (req, res, next) {
   }
 
   // Fetch transaction data
-  restling.get(api_url + '/transactions/1.json').then(function(result) {
+  restling.get(api_url + '/transactions/1.json')
+  .then(function(result) {
     pages.push(result.data);
     page_size = result.data.transactions.length;
     page_count = Math.ceil(result.data.totalCount / page_size);
-    return result;
-  })
-  .then(function(result) {
+
     var page_urls = [];
     for(i=2; i<=page_count; i++) {
       page_urls.push({'url': api_url + '/transactions/' + i + '.json'});
@@ -88,7 +89,7 @@ app.get('/', function (req, res, next) {
     markDuplicates(transactions);
     addRunningDailyTotals(transactions);
     cleanCompanyNames(transactions);
-    total_balance = transactions.reduce(sumTranaction, 0);
+    total_balance = transactions.reduce(sumTransaction, 0);
     transactions_by_category = groupByCategory(transactions);
 
     res.render('index', {
@@ -101,6 +102,7 @@ app.get('/', function (req, res, next) {
   })
   .catch(function (error) {
     console.log(error.message);
+    res.send("Sorry. There was a problem fetching your data. Please try again and let us know if you still get this message.");
   });
 });
 
