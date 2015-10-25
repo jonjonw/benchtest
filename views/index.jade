@@ -15,7 +15,7 @@ block content
           th Company
       tbody
         each transaction in transactions
-          tr
+          tr(class=transaction.isDuplicate ? "warning" : "")
             td= transaction.Date
             td= transaction.Ledger
             td= transaction.Amount

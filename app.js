@@ -17,7 +17,18 @@ app.get('/', function (req, res, next) {
   var page_size;
   var total_balance;
 
-  var sumTranaction = function(pv, transaction) { return pv + Number(transaction.Amount) };
+  var sumTranaction = function(pv, transaction) { return pv + Number(transaction.Amount) }
+  var markDuplicates = function(transactions) {
+    var hash = _.groupBy(transactions, function(transaction) {
+      return _.values(transaction).join('|'); // key for uniqueness
+    });
+    _.each(hash, function(transactions) {
+      var isDuplicate = transactions.length > 1;
+      _.each(transactions, function(transaction) {
+        transaction.isDuplicate = isDuplicate;
+      })
+    });
+  }
 
   // Fetch transaction data
   restling.get(api_url + '/transactions/1.json').then(function(result) {
@@ -36,6 +47,10 @@ app.get('/', function (req, res, next) {
   .then(function(responses) {
     pages = pages.concat(responses.map(function(response) { return response.data; }))
     transactions = [].concat.apply([], pages.map(function(page) { return page.transactions }));
+    markDuplicates(transactions);
+    total_balance = transactions.reduce(sumTranaction, 0);
+
+    // group by category
     transactions_by_category = _.chain(transactions).groupBy(function(transaction) {
       return transaction.Ledger
     }).map(function(transactions, category) {
@@ -45,7 +60,6 @@ app.get('/', function (req, res, next) {
         'transactions': transactions
       };
     }).values().value();
-    total_balance = transactions.reduce(sumTranaction, 0);
   })
   .then(function(result) {
     //console.log(transactions);
