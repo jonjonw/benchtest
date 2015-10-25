@@ -4,6 +4,9 @@ var app = express();
 
 var api_url = 'http://resttest.bench.co';
 
+app.set('views', 'views');
+app.set('view engine', 'jade');
+
 app.get('/', function (req, res, next) {
 
   var pages = [];
@@ -30,8 +33,12 @@ app.get('/', function (req, res, next) {
     transactions = [].concat.apply([], pages.map(function(page) { return page.transactions }));
   })
   .then(function(result) {
-    console.log(transactions);
-    res.json(transactions);
+    //console.log(transactions);
+    res.render('index', {
+      'title': 'Transactions',
+      'transactions': transactions,
+      'page_size': page_size
+    });
   })
   .catch(function (error) {
     console.log(error.message);
