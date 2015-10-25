@@ -55,6 +55,18 @@ app.get('/', function (req, res, next) {
       transaction.DailyTotal = dailyTotal.toFixed(2);
     });
   }
+  var cleanCompanyNames = function(transactions) {
+    _.each(transactions, function(transaction) {
+      transaction.Company = transaction.Company
+        .replace(/ [a-zA-Z]+ [A-Z]{2}$/,'') // city provence
+        .replace(/[xX]+[0-9]+/g,'') // masked card numbers
+        .replace(/[^a-zA-Z& ]/g,'') // special characters and numbers
+        .split(' ') // Uppercase first letters for each word
+        .map(function(word) {
+          return word.substring(0,1).toUpperCase() + word.substr(1).toLowerCase();
+        }).join(' ');
+    });
+  }
 
   // Fetch transaction data
   restling.get(api_url + '/transactions/1.json').then(function(result) {
@@ -75,6 +87,7 @@ app.get('/', function (req, res, next) {
     transactions = [].concat.apply([], pages.map(function(page) { return page.transactions }));
     markDuplicates(transactions);
     addRunningDailyTotals(transactions);
+    cleanCompanyNames(transactions);
     total_balance = transactions.reduce(sumTranaction, 0);
     transactions_by_category = groupByCategory(transactions);
 
