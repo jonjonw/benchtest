@@ -69,6 +69,7 @@ block bodyjs
   script.
     $(document).ready(function() {
       $('#transactions-table').DataTable({
+        'aaSorting': [],
         'pageLength': $('#transactions-table').data('page-size')
       });
     } );
