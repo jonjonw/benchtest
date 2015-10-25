@@ -36,11 +36,11 @@ app.get('/', function (req, res, next) {
       return transaction.Ledger
     }).map(function(transactions, category) {
       return {
-        'category': category,
+        'category': category == "" ? "None" : category,
         'total_balance': transactions.reduce(sumTranaction, 0),
         'transactions': transactions
       };
-    }).values().value();
+    }).values().sortBy('category').value();
     return grouped;
   }
   var addRunningDailyTotals = function(transactions) {
