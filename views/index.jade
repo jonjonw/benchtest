@@ -12,6 +12,7 @@ block content
           th Date
           th Ledger
           th Amount
+          th Daily Total
           th Company
       tbody
         each transaction in transactions
@@ -19,6 +20,7 @@ block content
             td= transaction.Date
             td= transaction.Ledger
             td= transaction.Amount
+            td= transaction.DailyTotal
             td= transaction.Company
 
     .panel.category-detail
@@ -41,7 +43,7 @@ block content
                     th Company
                 tbody
                   each transaction in category_data.transactions
-                    tr
+                    tr(class=transaction.isDuplicate ? "warning" : "")
                       td= transaction.Date
                       td= transaction.Amount
                       td= transaction.Company

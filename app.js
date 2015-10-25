@@ -29,6 +29,32 @@ app.get('/', function (req, res, next) {
       })
     });
   }
+  var groupByCategory = function(transactions) {
+    // Returns an array of objects {category: categoryName, total_balance, transactions}
+    //   each object contains transactions of a different cateogry
+    grouped = _.chain(transactions).groupBy(function(transaction) {
+      return transaction.Ledger
+    }).map(function(transactions, category) {
+      return {
+        'category': category,
+        'total_balance': transactions.reduce(sumTranaction, 0),
+        'transactions': transactions
+      };
+    }).values().value();
+    return grouped;
+  }
+  var addRunningDailyTotals = function(transactions) {
+    var date, dailyTotal = 0;
+    _.each(transactions, function(transaction) {
+      if (!date) date = transaction.Date;
+      if (date !== transaction.Date) {
+        date = transaction.Date;
+        dailyTotal = Number(transaction.Amount);
+      }
+      else dailyTotal += Number(transaction.Amount);
+      transaction.DailyTotal = dailyTotal.toFixed(2);
+    });
+  }
 
   // Fetch transaction data
   restling.get(api_url + '/transactions/1.json').then(function(result) {
@@ -48,21 +74,10 @@ app.get('/', function (req, res, next) {
     pages = pages.concat(responses.map(function(response) { return response.data; }))
     transactions = [].concat.apply([], pages.map(function(page) { return page.transactions }));
     markDuplicates(transactions);
+    addRunningDailyTotals(transactions);
     total_balance = transactions.reduce(sumTranaction, 0);
+    transactions_by_category = groupByCategory(transactions);
 
-    // group by category
-    transactions_by_category = _.chain(transactions).groupBy(function(transaction) {
-      return transaction.Ledger
-    }).map(function(transactions, category) {
-      return {
-        'category': category,
-        'total_balance': transactions.reduce(sumTranaction, 0),
-        'transactions': transactions
-      };
-    }).values().value();
-  })
-  .then(function(result) {
-    //console.log(transactions);
     res.render('index', {
       'title': 'Transactions',
       'total_balance': total_balance,
