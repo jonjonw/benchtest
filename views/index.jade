@@ -26,12 +26,12 @@ block content
         h3 Category Breakdowns
       .panel-body
         ul.nav.nav-tabs(role='tablist')
-          each transactions, index in transactions_by_category
+          each category_data, index in transactions_by_category
             li(role='tab')
-              a(href="#cateogry-#{index}", aria-controls="#cateogry-#{index}", role="tab", data-toggle="tab")= transactions[0].Ledger
+              a(href="#cateogry-#{index}", aria-controls="#cateogry-#{index}", role="tab", data-toggle="tab")= category_data.category
 
         .tab-content
-          each transactions, index in transactions_by_category
+          each category_data, index in transactions_by_category
             .tab-pane(id="cateogry-#{index}",role="tabpanel")
               table.table.table-striped.table-bordered.table-hover
                 thead
@@ -40,11 +40,16 @@ block content
                     th Amount
                     th Company
                 tbody
-                  each transaction in transactions
+                  each transaction in category_data.transactions
                     tr
                       td= transaction.Date
                       td= transaction.Amount
                       td= transaction.Company
+                tfoot
+                  tr
+                    td Total
+                    td= category_data.total_balance
+                    td
 
 block bodyjs
   script(src="//code.jquery.com/jquery-2.1.4.min.js")
