@@ -3,8 +3,8 @@ extends layout
 block content
   .container
     h1= title
-    dl Overview
-      dt Total Balance
+    dl
+      dt Total Balance:
       dd= total_balance
     table#transactions-table.table.table-striped.table-bordered.table-hover(data-page-size=page_size)
       thead
