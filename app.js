@@ -17,7 +17,11 @@ app.get('/', function (req, res, next) {
   var page_size;
   var total_balance;
 
-  var sumTransaction = function(pv, transaction) { return pv + Number(transaction.Amount) }
+  var totalBalance = function(transactions) {
+    return Number(transactions.reduce(function(pv, transaction) {
+      return pv + Number(transaction.Amount)
+    })).toFixed(2);
+  }
   var markDuplicates = function(transactions) {
     var hash = _.groupBy(transactions, function(transaction) {
       return _.values(transaction).join('|'); // key for uniqueness
@@ -36,8 +40,8 @@ app.get('/', function (req, res, next) {
       return transaction.Ledger
     }).map(function(transactions, category) {
       return {
-        'category': category == "" ? "None" : category,
-        'total_balance': transactions.reduce(sumTransaction, 0).toFixed(2),
+        'category': category == "" ? "Uncategorized" : category,
+        'total_balance': totalBalance(transactions),
         'transactions': transactions
       };
     }).values().sortBy('category').value();
@@ -56,7 +60,6 @@ app.get('/', function (req, res, next) {
     });
   }
   var cleanCompanyNames = function(transactions) {
-
     _.each(transactions, function(transaction) {
       transaction.Company = transaction.Company
         .replace(/ [a-zA-Z]+ [A-Z]{2}$/,'') // city provence
@@ -70,6 +73,7 @@ app.get('/', function (req, res, next) {
   }
 
   // Fetch transaction data
+  // Fetch page 1 first to find the page count
   restling.get(api_url + '/transactions/1.json')
   .then(function(result) {
     pages.push(result.data);
@@ -85,22 +89,21 @@ app.get('/', function (req, res, next) {
   .then(function(responses) {
     pages = pages.concat(responses.map(function(response) { return response.data; }));
     transactions = _.chain(pages)
-      .map(function(page) { return page.transactions })
-      .flatten()
-      .sortBy('Date')
-      .reverse()
-      .value();
+      .map(function(page) { return page.transactions }) // extract transactions from pages
+      .flatten() // combine all the transaction collections
+      .value()
+      .sort(function (a,b) {
+        return (a.Date==b.Date ? 0 : a.Date < b.Date? 1 : -1); // decending sort
+      });
     markDuplicates(transactions);
     addRunningDailyTotals(transactions);
     cleanCompanyNames(transactions);
-    total_balance = transactions.reduce(sumTransaction, 0);
-    transactions_by_category = groupByCategory(transactions);
 
     res.render('index', {
       'title': 'Transactions',
-      'total_balance': total_balance,
+      'total_balance': totalBalance(transactions),
       'transactions': transactions,
-      'transactions_by_category': transactions_by_category,
+      'transactions_by_category': groupByCategory(transactions),
       'page_size': page_size
     });
   })
