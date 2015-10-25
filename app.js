@@ -37,14 +37,13 @@ app.get('/', function (req, res, next) {
     }).map(function(transactions, category) {
       return {
         'category': category == "" ? "None" : category,
-        'total_balance': transactions.reduce(sumTransaction, 0),
+        'total_balance': transactions.reduce(sumTransaction, 0).toFixed(2),
         'transactions': transactions
       };
     }).values().sortBy('category').value();
     return grouped;
   }
   var addRunningDailyTotals = function(transactions) {
-    // Note: Was told that the data from the API will always be sorted by date
     var date, dailyTotal = 0;
     _.each(transactions, function(transaction) {
       if (!date) date = transaction.Date;
@@ -84,8 +83,13 @@ app.get('/', function (req, res, next) {
     return restling.settleAsync(page_urls);
   })
   .then(function(responses) {
-    pages = pages.concat(responses.map(function(response) { return response.data; }))
-    transactions = [].concat.apply([], pages.map(function(page) { return page.transactions }));
+    pages = pages.concat(responses.map(function(response) { return response.data; }));
+    transactions = _.chain(pages)
+      .map(function(page) { return page.transactions })
+      .flatten()
+      .sortBy('Date')
+      .reverse()
+      .value();
     markDuplicates(transactions);
     addRunningDailyTotals(transactions);
     cleanCompanyNames(transactions);
