@@ -32,16 +32,8 @@ app.get('/', function (req, res, next) {
     return restling.settleAsync(page_urls);
   })
   .then(function(responses) {
-    // Extract transaction collection
     pages = pages.concat(responses.map(function(response) { return response.data; }));
-    var tc = new TransactionCollection(
-      _.chain(pages)
-        .map(function(page) { return page.transactions })
-        .flatten()
-        .sortBy('Date')
-        .reverse()
-      .value()
-    );
+    var tc = TransactionCollection.constructFromPages(pages);
 
     res.render('index', {
       'title': 'Transactions',

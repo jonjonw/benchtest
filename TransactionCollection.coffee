@@ -15,6 +15,11 @@ class TransactionCollection
     @cleanCompanyNames()
     @prettyAmounts()
 
+  @constructFromPages: (pages) ->
+    new TransactionCollection _.chain(pages).map((page) ->
+      page.transactions
+    ).flatten().sortBy('Date').reverse().value()
+
   totalTransactionsBalance: (transactions) ->
     Number(_.pluck(transactions, 'Amount').reduce((a,b) ->
       Number(a) + Number(b)
