@@ -53,11 +53,13 @@ class TransactionCollection
   cleanCompanyNames: =>
     _.each @transactions, (trans) -> 
       trans.Company = trans.Company.replace(
-        / [a-zA-Z]+ [A-Z]{2}$/, '' # city prov
+        / [^ ]+ [A-Z]{2}$/, '' # city prov
       ).replace(
-        /[xX]+[0-9]+/g, '' # masked card numbers
+        / [^ ]*[0-9]+[^ ]*/g, '' # words containing numbers
       ).replace(
-        /[^a-zA-Z& ]/g,'' # special characters and numbers
+        / (CA)|(USD) /g, '' # blacklisted words
+      ).replace(
+        /[^a-zA-Z&. ]/g,'' # special characters and numbers
       ).split(' ').map((word) -> # Uppercase first letters for each word
         word.substring(0,1).toUpperCase() + word.substr(1).toLowerCase()
       ).join(' ')
