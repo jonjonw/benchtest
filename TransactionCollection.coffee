@@ -58,7 +58,7 @@ class TransactionCollection
         /[xX]+[0-9]+/g, '' # masked card numbers
       ).replace(
         /[^a-zA-Z& ]/g,'' # special characters and numbers
-      ).split().map((word) -> # Uppercase first letters for each word
+      ).split(' ').map((word) -> # Uppercase first letters for each word
         word.substring(0,1).toUpperCase() + word.substr(1).toLowerCase()
       ).join(' ')
 
