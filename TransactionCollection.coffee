@@ -24,9 +24,8 @@ class TransactionCollection
   markDuplicates: =>
     hash = _.groupBy(@transactions, (trans) -> _.values(trans).join('|')) # unique hashkey
     _.each hash, (transactions) ->
-      isDuplicate = transactions.length > 1
       _.each transactions, (trans) ->
-        trans.isDuplicate = isDuplicate
+        trans.isDuplicate = (transactions.length > 1)
 
   groupByCategory: =>
     # Returns an array of objects {category: categoryName, total_balance, transactions}
