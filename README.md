@@ -2,7 +2,7 @@
 
 ## Requirements
 
-This project was developed and tested against io.js but will likely work with vanilla node as well. You will need npm to install the needed packages.
+You will need node and npm installed to install the required packages.
 
 ## Installation
 - Clone the repository and cd into it.
