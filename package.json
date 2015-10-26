@@ -2,6 +2,7 @@
   "name": "benchrest",
   "version": "0.0.1",
   "dependencies": {
+    "coffee-script": "^1.10.0",
     "express": "^4.13.3",
     "jade": "^1.11.0",
     "restling": "^0.9.1",
