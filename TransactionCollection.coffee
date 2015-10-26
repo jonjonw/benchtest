@@ -13,6 +13,7 @@ class TransactionCollection
     @markDuplicates()
     @addRunningDailyTotals()
     @cleanCompanyNames()
+    @prettyAmounts()
 
   totalTransactionsBalance: (transactions) ->
     Number(_.pluck(transactions, 'Amount').reduce((a,b) ->
@@ -64,6 +65,9 @@ class TransactionCollection
         word.substring(0,1).toUpperCase() + word.substr(1).toLowerCase()
       ).join(' ')
 
-  getArray: -> @transactions
+  prettyAmounts: =>
+    _.each @transactions, (trans) -> trans.Amount = Number(trans.Amount).toFixed(2)
+
+  getArray: => @transactions
 
 module.exports = TransactionCollection
